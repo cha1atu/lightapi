@@ -1,0 +1,75 @@
+services:
+  tbcnode:
+    image: chalatu/tbcnode:v3.1.0
+    container_name: tbcnode
+    restart: always
+    volumes:
+      - ./node_data:/TBCNODE/node_data_dir
+    networks:
+      - tbc-network
+
+  electrumx:
+    image: chalatu/electrumx:v0.5.0
+    container_name: electrumx
+    restart: always
+    depends_on:
+      tbcnode:
+        condition: service_started
+    environment:
+      - DAEMON_URL=tbcuser:randompasswd@tbcnode
+    volumes:
+      - ./electrumx_data:/data
+    networks:
+      - tbc-network
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: TBCdb@#2024Secure!
+      MYSQL_DATABASE: TBC20721
+    volumes:
+      - ./mysqldata:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pTBCdb@#2024Secure!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - tbc-network
+
+  tbcapi:
+    image: chalatu/tbcapi:latest
+    container_name: tbcapi
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - TBC_RPC_URL=http://tbcnode:8332/
+      - TBC_RPC_USER=tbcuser
+      - TBC_RPC_PASS=randompasswd
+      - ELECTRUMX_RPC_HOST=electrumx
+      - ELECTRUMX_RPC_PORT=50001
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASS=TBCdb@#2024Secure!
+      - MYSQL_DB=TBC20721
+      - IN_DOCKER=true
+    depends_on:
+      tbcnode:
+        condition: service_started
+      electrumx:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - tbc-network
+
+networks:
+  tbc-network:
+    driver: bridge 
