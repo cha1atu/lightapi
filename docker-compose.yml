@@ -1,7 +1,9 @@
 services:
   tbcnode:
-    image: chalatu/tbcnode:v3.1.0
+    image: chalatu/tbcnode:latest
     container_name: tbcnode
+    ports:
+      - "8333:8333" 
     restart: always
     volumes:
       - ./node_data:/TBCNODE/node_data_dir
@@ -9,7 +11,7 @@ services:
       - tbc-network
 
   electrumx:
-    image: chalatu/electrumx:v0.5.0
+    image: chalatu/electrumx:latest
     container_name: electrumx
     restart: always
     depends_on:

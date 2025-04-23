@@ -20,7 +20,18 @@
    cd tbc-deploy
    ```
 
-3. Download docker compose.yml and init.sql files from GitHub to the current directory
+3. Unzip docker compose.yml and init.sql files to the current directory
+
+### Login to Docker Registry
+Since the repository is private, you need to login to pull images
+1. Login to Docker
+   ```
+   docker login -u chalatu
+   ```
+2. Enter the PAT (Personal access token) provided by TBC (valid for 90 days by default)
+   ```
+   dckr_pat_************
+   ```
 
 
 ### Start Services
@@ -58,10 +69,6 @@ alias tbc-cli="/TBCNODE/bin/bitcoin-cli -conf=/TBCNODE/node.conf -datadir=/TBCNO
 tbc-cli getblockcount
 ```
 
-Test if node has synced to a certain block height:
-```
-sudo docker exec -it tbcnode /bin/bash -c "alias tbc-cli='/TBCNODE/bin/bitcoin-cli -conf=/TBCNODE/node.conf -datadir=/TBCNODE/node_data_dir' && block_height=\$(tbc-cli getblockcount) && [ \$block_height -gt 1000 ] && echo 'Node has synced at least 1000 blocks: '\$block_height || echo 'Node has not reached minimum block height: '\$block_height"
-```
 
 ### 2. ElectrumX Check
 
@@ -75,29 +82,8 @@ View real-time logs:
 sudo docker logs --tail 100 -f electrumx
 ```
 
-Check ElectrumX port listening status:
-```
-sudo docker exec -it electrumx netstat -tulpn | grep 50001
-```
 
-### 3. Database (MySQL) Check
-
-Check database container status:
-```
-sudo docker logs db --tail 100
-```
-
-Connect to the database:
-```
-sudo docker exec -it db mysql -u root -pTBCdb@#2024Secure! -e "SHOW DATABASES;"
-```
-
-Check database tables:
-```
-sudo docker exec -it db mysql -u root -pTBCdb@#2024Secure! -e "USE TBC20721; SHOW TABLES;"
-```
-
-### 4. TBCAPI Check
+### 3. TBCAPI Check
 
 View API service logs:
 ```
@@ -118,12 +104,6 @@ Check container error logs:
 sudo docker logs [container_name]
 ```
 
-### Service Connection Issues
-
-Check network configuration:
-```
-sudo docker network inspect tbc-network
-```
 
 ### Data Persistence Confirmation
 
@@ -180,4 +160,9 @@ sudo docker compose down --remove-orphans
 Complete cleanup (use with caution, will delete all data):
 ```
 sudo docker compose down -v --remove-orphans
-``` 
+```
+
+## System Requirements
+
+The service can run normally on an AWS c5.xlarge instance (4 vCPUs, 8GB RAM).
+Storage space required for docker images and database files (excluding the Docker environment):

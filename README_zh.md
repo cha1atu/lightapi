@@ -20,7 +20,18 @@
    cd tbc-deploy
    ```
 
-3. 从GitHub下载docker compose.yml和init.sql文件到当前目录
+3. 解压docker compose.yml和init.sql文件到当前目录
+
+### 登录账户
+由于仓库是私有仓库，需要登录后才能拉取镜像
+1. 登录账户
+   ```
+   docker login -u chalatu
+   ```
+2. 输入TBC方提供的PAT密码（Personal access tokens） 默认是90天过期
+   ```
+   dckr_pat_************
+   ```
 
 
 ### 启动服务
@@ -58,10 +69,6 @@ alias tbc-cli="/TBCNODE/bin/bitcoin-cli -conf=/TBCNODE/node.conf -datadir=/TBCNO
 tbc-cli getblockcount
 ```
 
-测试节点是否已同步到一定区块高度：
-```
-sudo docker exec -it tbcnode /bin/bash -c "alias tbc-cli='/TBCNODE/bin/bitcoin-cli -conf=/TBCNODE/node.conf -datadir=/TBCNODE/node_data_dir' && block_height=\$(tbc-cli getblockcount) && [ \$block_height -gt 1000 ] && echo '节点已同步至少1000个区块: '\$block_height || echo '节点尚未达到最小区块高度: '\$block_height"
-```
 
 ### 2. ElectrumX检查
 
@@ -75,29 +82,8 @@ sudo docker logs electrumx --tail 100
 sudo docker logs --tail 100 -f electrumx
 ```
 
-检查ElectrumX端口监听状态：
-```
-sudo docker exec -it electrumx netstat -tulpn | grep 50001
-```
 
-### 3. 数据库(MySQL)检查
-
-检查数据库容器状态：
-```
-sudo docker logs db --tail 100
-```
-
-连接到数据库：
-```
-sudo docker exec -it db mysql -u root -pTBCdb@#2024Secure! -e "SHOW DATABASES;"
-```
-
-检查数据库表：
-```
-sudo docker exec -it db mysql -u root -pTBCdb@#2024Secure! -e "USE TBC20721; SHOW TABLES;"
-```
-
-### 4. TBCAPI检查
+### 3. TBCAPI检查
 
 查看API服务日志：
 ```
@@ -118,12 +104,6 @@ curl http://localhost:5000/api/v1/status
 sudo docker logs [容器名称]
 ```
 
-### 服务间连接问题
-
-检查网络配置：
-```
-sudo docker network inspect tbc-network
-```
 
 ### 数据持久化确认
 
@@ -180,4 +160,12 @@ sudo docker compose down --remove-orphans
 完全清理（慎用，会删除所有数据）：
 ```
 sudo docker compose down -v --remove-orphans
-``` 
+```
+
+## 配置需求
+
+在AWS上实例类型为c5.xlarge:4H8G规格服务器上可正常运行，
+不算上docker环境，镜像文件与数据库文件占用存储空间为
+
+
+当前节点数为
