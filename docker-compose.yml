@@ -3,7 +3,7 @@ services:
     image: chalatu/tbcnode:latest
     container_name: tbcnode
     ports:
-      - "8333:8333" 
+      - "8333:8333"  #this is the port for the node server to find peers
     restart: always
     volumes:
       - ./node_data:/TBCNODE/node_data_dir
@@ -49,7 +49,7 @@ services:
     container_name: tbcapi
     restart: always
     ports:
-      - "5000:5000"
+      - "5000:5000" #this is the port for the api to listen
     environment:
       - TBC_RPC_URL=http://tbcnode:8332/
       - TBC_RPC_USER=tbcuser

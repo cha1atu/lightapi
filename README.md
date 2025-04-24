@@ -165,4 +165,10 @@ sudo docker compose down -v --remove-orphans
 ## System Requirements
 
 The service can run normally on an AWS c5.xlarge instance (4 vCPUs, 8GB RAM).
-Storage space required for docker images and database files (excluding the Docker environment):
+Storage space required:
+- Docker images: approximately 5.839GB (3.236GB + 2.603GB)
+- Database files: approximately 10GB
+
+To ensure long-term usage, allocate at least 256GB of storage space.
+
+Current synchronized block: 884720
