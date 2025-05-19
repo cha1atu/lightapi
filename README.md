@@ -1,9 +1,5 @@
 # TBC服务套件部署说明书
 
-<div align="center">
-  <a href="README.md">English</a> | <a href="README_zh.md">中文</a>
-</div>
-
 ## 部署步骤
 
 ### 准备工作
@@ -14,23 +10,10 @@
    docker compose --version
    ```
 
-2. 创建项目目录结构
+2. 拉取项目
    ```
-   mkdir -p tbc-deploy
-   cd tbc-deploy
-   ```
-
-3. 解压docker compose.yml和init.sql文件到当前目录
-
-### 登录账户
-由于仓库是私有仓库，需要登录后才能拉取镜像
-1. 登录账户
-   ```
-   docker login -u chalatu
-   ```
-2. 输入TBC方提供的PAT密码（Personal access tokens） 默认是90天过期
-   ```
-   dckr_pat_************
+   git clone https://github.com/cha1atu/lightapi
+   cd lightapi
    ```
 
 
@@ -59,7 +42,8 @@ tbc-cli getinfo
 
 查看日志：
 ```
-docker logs tbcnode --tail 100
+docker exec -it tbcnode /bin/bash
+pm2 logs tbcd
 ```
 
 查看区块同步状态：
@@ -90,9 +74,9 @@ docker logs --tail 100 -f electrumx
 docker logs tbcapi --tail 100
 ```
 
-测试API是否可用：
+测试API是否启动：
 ```
-curl http://localhost:5000/api/v1/status
+curl http://localhost:5000/v1/tbc/main/health
 ```
 
 ## 常见问题排查
@@ -128,22 +112,6 @@ docker compose pull [服务名]
 docker compose up -d [服务名]
 ```
 
-## 备份数据
-
-TBCNode数据备份：
-```
-tar -czvf node_backup.tar.gz ./node_data
-```
-
-ElectrumX数据备份：
-```
-tar -czvf electrumx_backup.tar.gz ./electrumx_data
-```
-
-MySQL数据备份：
-```
-docker exec db mysqldump -u root -pTBCdb@#2024Secure! --all-databases > mysql_backup.sql
-```
 
 ## 服务停止和清理
 
@@ -162,16 +130,33 @@ docker compose down --remove-orphans
 docker compose down -v --remove-orphans
 ```
 
-## 配置需求
+## 注意事项
 
-在AWS上实例类型为c5.xlarge:4H8G规格服务器上可正常运行，
-存储占用情况：
-（不算docker环境）
-镜像文件：3.236+2.603=5.839G
+部署过程中，如果遇到tbcapi捕获区块建立索引过慢的情况：使用docker logs tbcapi -f -n 10 通过日志发现每两秒才扫描一个新块
+可以采用以下方法解决：
 
-数据库文件:
-10G左右
+1.使用docker stop tbcapi暂时关闭tbcapi
 
-为了能长期使用，至少选择分配256G以上的存储空间。
+2.使用docker logs electrumx -f -n 10查看electrumx的同步情况
 
-当前同步区块为884720
+3.等待electrumx同步到最新区块后，使用docker start tbcapi打开tbcapi开始同步
+
+4.使用docker logs tbcapi -f -n 10查看tbcapi的同步情况
+
+5.等待tbcapi同步到最新区块后，可对外提供服务以及自行测试
+
+该问题只会在从头部署轻节点时出现，后续重启，升级都不会出现这个问题。
+
+其它问题：
+
+1.目前TBCAPI重启需要重新建立数据库，比较浪费时间（大约1个小时）
+
+该问题我们会在后续tbcapi功能更新中一并解决，也会发布新的镜像；该问题不会影响tbcapi本身的服务质量，只是会造成tbcapi同步时间过长，不会造成功能性故障。
+
+2.electrumx重启会导致重启前的数据库中的时间和高度信息被覆盖为重启前的最新高度和时间，
+
+因此重启electrumx需要将持久化数据删除，让其从头建立数据库，可规避对先前数据库的修改。
+
+该问题后续也会改正，目前的工作主要集中在tbcapi上的性能优化，electrumx需要重启的次数很少。
+
+
