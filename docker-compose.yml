@@ -65,7 +65,7 @@ services:
       - IN_DOCKER=true
     depends_on:
       tbcnode:
-        condition: service_started
+        condition: service_healthy
       electrumx:
         condition: service_started
       db:
