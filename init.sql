@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS `nft_utxo_set` (
   KEY `idx_utxo_id` (`nft_utxo_id`),
   KEY `idx_nft_holder` (`nft_holder_script_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE TBC20721.nft_utxo_set
+ADD INDEX idx_collection_id_index (collection_id, collection_index);
 
 -- Token Table
 CREATE TABLE IF NOT EXISTS `ft_tokens` (
