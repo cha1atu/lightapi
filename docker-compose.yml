@@ -4,6 +4,7 @@ services:
     container_name: tbcnode
     ports:
       - "8333:8333"  #this is the port for the node server to find peers
+      - "8332:8332"  #this is the port for the node server to support rpc
     restart: always
     volumes:
       - ./node_data:/TBCNODE/node_data_dir
